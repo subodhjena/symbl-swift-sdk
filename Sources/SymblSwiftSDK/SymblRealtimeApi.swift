@@ -9,19 +9,19 @@ import Foundation
 
 public class SymblRealtimeApi: NSObject, URLSessionWebSocketDelegate {
     private var _accessToken: String
-    var accessToken: String {
+    public var accessToken: String {
         set { _accessToken = newValue }
         get { return _accessToken }
     }
     
     private var _uniqueMeetingId: String
-    var uniqueMeetingId: String {
+    public var uniqueMeetingId: String {
         set { _uniqueMeetingId = newValue }
         get { return _uniqueMeetingId }
     }
     
     private var _isConnected: Bool = false
-    var isConnected: Bool {
+    public var isConnected: Bool {
         get { return _isConnected }
     }
     
@@ -48,6 +48,54 @@ public class SymblRealtimeApi: NSObject, URLSessionWebSocketDelegate {
     public func disconnect() {
         print("SymblRealtimeApi: Disconnect()")
         self._urlSessionWebSocketTask?.cancel(with: .goingAway, reason: nil)
+    }
+    
+    public func startRequest(startRequest: SymblStartRequest) {
+        if(isConnected) {
+            do {
+                let startRequestJson = try startRequest.jsonString()!
+                DispatchQueue.global().asyncAfter(deadline: .now() + 1) {
+                    self._urlSessionWebSocketTask!.send(.string(startRequestJson)) { error in
+                        if let error = error {
+                            print("Error when sending a message \(error)")
+                        }
+                    }
+                }
+            } catch let err {
+                print("Failed to encode JSON \(err)")
+            }
+        }
+    }
+    
+    public func stopRequest() {
+        if(isConnected) {
+            let stopRequest = SymblStopRequest(type: "stop_request")
+
+            do {
+                let stopRequestJson = try stopRequest.jsonString()!
+                DispatchQueue.global().asyncAfter(deadline: .now() + 1) {
+                    self._urlSessionWebSocketTask!.send(.string(stopRequestJson)) { error in
+                        if let error = error {
+                            print("Error when sending a message \(error)")
+                        }
+                    }
+                }
+            } catch let err {
+                print("Failed to encode JSON \(err)")
+            }
+        }
+    }
+    
+    public func streamAudio(data: Data) {
+        if isConnected {
+            let message = URLSessionWebSocketTask.Message.data(data)
+            self._urlSessionWebSocketTask!.send(message) { error in
+                if let error = error {
+                    print("Symbl WebSocket Streaming Error: \(error)")
+                }
+            }
+            
+        }
     }
     
     public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
