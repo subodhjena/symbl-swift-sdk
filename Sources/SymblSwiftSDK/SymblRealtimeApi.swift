@@ -25,8 +25,9 @@ public class SymblRealtimeApi: NSObject, URLSessionWebSocketDelegate {
         get { return _isConnected }
     }
     
-    weak var delegate: SymblRealtimeDelegate?
     private var _urlSessionWebSocketTask: URLSessionWebSocketTask?
+    weak var delegate: SymblRealtimeDelegate?
+    
     
     init(accessToken: String, uniqueMeetingId: String) {
         _accessToken = accessToken
