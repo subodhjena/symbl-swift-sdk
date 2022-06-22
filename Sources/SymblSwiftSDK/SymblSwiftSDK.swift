@@ -7,24 +7,22 @@
 
 import Foundation
 
-public struct Symbl {
-    private var _acessToken = ""
+public class Symbl {
+    private var _acessToken: String
+    public var accessToken: String {
+        return _acessToken
+    }
+    
+    private var _realtimeSession: SymblRealtimeApi?
+    public var realtimeSession: SymblRealtimeApi? {
+        return _realtimeSession
+    }
     
     public init(accessToken: String) {
         _acessToken = accessToken
     }
     
-    public func initializeRealtimeApi() throws -> SymblRealtimeApi {
-        if(_acessToken.isEmpty) {
-            throw SymblError.invalidAccessToken
-        }
-        
-        return SymblRealtimeApi()
+    public func initializeRealtimeSession(meetingId: String) {
+        _realtimeSession = SymblRealtimeApi(accessToken: self.accessToken, uniqueMeetingId: meetingId)
     }
-}
-
-
-enum SymblError: Error {
-    case invalidAccessToken
-    case expiredAccessToken
 }
