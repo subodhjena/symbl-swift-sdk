@@ -52,13 +52,13 @@ public class SymblRealtimeApi: NSObject, URLSessionWebSocketDelegate {
     public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
         print("SymblRealtimeApi: Symbl WebSocket Connected")
         self.readMessage()
-        self.delegate?.onSymblRealtimeConnected()
+        self.delegate?.symblRealtimeConnected()
         self._isConnected = true
     }
     
     public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
         print("SymblRealtimeApi: Symbl WebSocket Disconnected")
-        self.delegate?.onSymblRealtimeDisonnected()
+        self.delegate?.symblRealtimeDisonnected()
         self._isConnected = true
     }
     
@@ -84,6 +84,6 @@ public class SymblRealtimeApi: NSObject, URLSessionWebSocketDelegate {
 }
 
 public protocol SymblRealtimeDelegate: AnyObject {
-    func onSymblRealtimeConnected()
-    func onSymblRealtimeDisonnected()
+    func symblRealtimeConnected()
+    func symblRealtimeDisonnected()
 }
