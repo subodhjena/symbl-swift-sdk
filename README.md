@@ -1,3 +1,3 @@
-# SymblSwiftSDK
+# Symbl Swift SDK
 
-A description of this package.
+Swift SDK to add symb's api cababilities to your iOS, IPad and Mac apps
