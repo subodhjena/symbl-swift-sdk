@@ -9,8 +9,21 @@ import Foundation
 
 public class SymblRealtimeApi: NSObject, URLSessionWebSocketDelegate {
     private var _accessToken: String
+    var accessToken: String {
+        set { _accessToken = newValue }
+        get { return _accessToken }
+    }
+    
     private var _uniqueMeetingId: String
-    private var _isConnected = false
+    var uniqueMeetingId: String {
+        set { _uniqueMeetingId = newValue }
+        get { return _uniqueMeetingId }
+    }
+    
+    private var _isConnected: Bool = false
+    var isConnected: Bool {
+        get { return _isConnected }
+    }
     
     private var _urlSessionWebSocketTask: URLSessionWebSocketTask?
     
@@ -37,13 +50,15 @@ public class SymblRealtimeApi: NSObject, URLSessionWebSocketDelegate {
     
     public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
         print("SymblRealtimeApi: Symbl WebSocket Connected")
-        self._isConnected = true
         self.readMessage()
+        
+        self._isConnected = true
     }
     
     public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
         print("SymblRealtimeApi: Symbl WebSocket Disconnected")
-        _isConnected = false
+        
+        self._isConnected = true
     }
     
     func readMessage()  {
