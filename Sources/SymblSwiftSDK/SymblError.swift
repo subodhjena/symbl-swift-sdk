@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum SymblError: Error {
+public enum SymblError: Error {
     case invalidAccessToken
     case expiredAccessToken
 }
