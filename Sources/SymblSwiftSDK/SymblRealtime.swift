@@ -25,9 +25,8 @@ public class SymblRealtime: NSObject, URLSessionWebSocketDelegate {
         get { return _isConnected }
     }
     
-    private var _urlSessionWebSocketTask: URLSessionWebSocketTask?
+    var webSocketTask: URLSessionWebSocketTask?
     weak var delegate: SymblRealtimeDelegate?
-    
     
     init(accessToken: String, uniqueMeetingId: String) {
         _accessToken = accessToken
@@ -40,12 +39,13 @@ public class SymblRealtime: NSObject, URLSessionWebSocketDelegate {
         let webSocketURLSession = URLSession(configuration: .default, delegate: self, delegateQueue: OperationQueue())
         let webSocketURL = URL(string: symblEndpoint)!
         
-        self._urlSessionWebSocketTask = webSocketURLSession.webSocketTask(with: webSocketURL)
-        self._urlSessionWebSocketTask?.resume()
+        self.webSocketTask = webSocketURLSession.webSocketTask(with: webSocketURL)
+        self.webSocketTask?.resume()
     }
     
     public func disconnect() {
-        self._urlSessionWebSocketTask?.cancel(with: .goingAway, reason: nil)
+        let reason = "Closing connection".data(using: .utf8)
+        self.webSocketTask?.cancel(with: .goingAway, reason: reason)
     }
     
     public func startRequest(startRequest: SymblStartRequest) {
@@ -53,7 +53,7 @@ public class SymblRealtime: NSObject, URLSessionWebSocketDelegate {
             do {
                 let startRequestJson = try startRequest.jsonString()!
                 DispatchQueue.global().asyncAfter(deadline: .now() + 1) {
-                    self._urlSessionWebSocketTask!.send(.string(startRequestJson)) { error in
+                    self.webSocketTask!.send(.string(startRequestJson)) { error in
                         if let error = error {
                             print("Error when sending a message \(error)")
                         }
@@ -72,7 +72,7 @@ public class SymblRealtime: NSObject, URLSessionWebSocketDelegate {
             do {
                 let stopRequestJson = try stopRequest.jsonString()!
                 DispatchQueue.global().asyncAfter(deadline: .now() + 1) {
-                    self._urlSessionWebSocketTask!.send(.string(stopRequestJson)) { error in
+                    self.webSocketTask!.send(.string(stopRequestJson)) { error in
                         if let error = error {
                             print("Error when sending a message \(error)")
                         }
@@ -87,7 +87,7 @@ public class SymblRealtime: NSObject, URLSessionWebSocketDelegate {
     public func streamAudio(data: Data) {
         if isConnected {
             let message = URLSessionWebSocketTask.Message.data(data)
-            self._urlSessionWebSocketTask!.send(message) { error in
+            self.webSocketTask!.send(message) { error in
                 if let error = error {
                     print("Symbl WebSocket Streaming Error: \(error)")
                 }
@@ -98,8 +98,8 @@ public class SymblRealtime: NSObject, URLSessionWebSocketDelegate {
     
     public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
         print("SymblRealtimeApi: Symbl WebSocket Connected")
-        self.readMessage()
         self.delegate?.symblRealtimeConnected()
+        self.readMessage()
         self._isConnected = true
     }
     
@@ -109,7 +109,7 @@ public class SymblRealtime: NSObject, URLSessionWebSocketDelegate {
     }
     
     func readMessage()  {
-        _urlSessionWebSocketTask?.receive { result in
+        webSocketTask!.receive { result in
             switch result {
             case .failure(let error):
                 print("Failed to receive message: \(error)")
@@ -118,6 +118,7 @@ public class SymblRealtime: NSObject, URLSessionWebSocketDelegate {
                 case .string(let text):
                     do {
                         let symblData = try SymblData(text)
+                        
                         if(symblData.type == "message") {
                             let symblMessageData = try SymblMessageData(text)
                             self.delegate!.symblReceivedMessage(message: symblMessageData.message)
@@ -152,18 +153,23 @@ public class SymblRealtime: NSObject, URLSessionWebSocketDelegate {
                             self.delegate!.symblReceivedToipcResponse(topicResponse: symblTopicResponse)
                         }
                     } catch {
-                        print("Failed while decoding data: \(error)")
+                        print(error)
                     }
                 case .data(let data):
                     print("Received binary message: \(data)")
                 @unknown default:
                     fatalError()
                 }
-                
-                self.readMessage()
             }
+            
+            self.readMessage()
         }
     }
+}
+
+public enum Message {
+    case data(Data)
+    case string(String)
 }
 
 public protocol SymblRealtimeDelegate: AnyObject {
