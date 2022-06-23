@@ -13,8 +13,8 @@ public class Symbl {
         return _acessToken
     }
     
-    private var _realtimeSession: SymblRealtimeApi?
-    public var realtimeSession: SymblRealtimeApi? {
+    private var _realtimeSession: SymblRealtime?
+    public var realtimeSession: SymblRealtime? {
         return _realtimeSession
     }
     
@@ -23,7 +23,7 @@ public class Symbl {
     }
     
     public func initializeRealtimeSession(meetingId: String, delegate: SymblRealtimeDelegate) {
-        _realtimeSession = SymblRealtimeApi(accessToken: self.accessToken, uniqueMeetingId: meetingId)
+        _realtimeSession = SymblRealtime(accessToken: self.accessToken, uniqueMeetingId: meetingId)
         _realtimeSession?.delegate = delegate
     }
 }

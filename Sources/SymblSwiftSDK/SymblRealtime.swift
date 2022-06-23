@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class SymblRealtimeApi: NSObject, URLSessionWebSocketDelegate {
+public class SymblRealtime: NSObject, URLSessionWebSocketDelegate {
     private var _accessToken: String
     public var accessToken: String {
         set { _accessToken = newValue }
@@ -35,7 +35,6 @@ public class SymblRealtimeApi: NSObject, URLSessionWebSocketDelegate {
     }
     
     public func connect() {
-        print("SymblRealtimeApi: Connect()")
         let symblEndpoint = "wss://api.symbl.ai/v1/streaming/\(_uniqueMeetingId)?access_token=\(_accessToken)"
         
         let webSocketURLSession = URLSession(configuration: .default, delegate: self, delegateQueue: OperationQueue())
@@ -46,7 +45,6 @@ public class SymblRealtimeApi: NSObject, URLSessionWebSocketDelegate {
     }
     
     public func disconnect() {
-        print("SymblRealtimeApi: Disconnect()")
         self._urlSessionWebSocketTask?.cancel(with: .goingAway, reason: nil)
     }
     
@@ -70,7 +68,7 @@ public class SymblRealtimeApi: NSObject, URLSessionWebSocketDelegate {
     public func stopRequest() {
         if(isConnected) {
             let stopRequest = SymblStopRequest(type: "stop_request")
-
+            
             do {
                 let stopRequestJson = try stopRequest.jsonString()!
                 DispatchQueue.global().asyncAfter(deadline: .now() + 1) {
@@ -106,7 +104,6 @@ public class SymblRealtimeApi: NSObject, URLSessionWebSocketDelegate {
     }
     
     public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
-        print("SymblRealtimeApi: Symbl WebSocket Disconnected")
         self.delegate?.symblRealtimeDisonnected()
         self._isConnected = true
     }
@@ -131,7 +128,24 @@ public class SymblRealtimeApi: NSObject, URLSessionWebSocketDelegate {
                         }
                         else if(symblData.type == "insight_response") {
                             let symblInsightResponse = try SymblInsightResponse(text)
-                            self.delegate!.symblReceivedInsightResponse(insightResponse: symblInsightResponse)
+                            
+                            // Questions
+                            let questions = symblInsightResponse.insights.filter { $0.type == "question" }
+                            if(!questions.isEmpty) {
+                                self.delegate?.symblReceivedQuestions(questions: questions)
+                            }
+                            
+                            // Action Items
+                            let actionItems = symblInsightResponse.insights.filter { $0.type == "action_item" }
+                            if(!actionItems.isEmpty) {
+                                self.delegate?.symblReceivedActionItems(actionItems: actionItems)
+                            }
+                            
+                            // Follow Ups
+                            let followUps = symblInsightResponse.insights.filter { $0.type == "follow_up" }
+                            if(!followUps.isEmpty) {
+                                self.delegate?.symblReceivedFollowUps(followUps: followUps)
+                            }
                         }
                         else if(symblData.type == "topic_response") {
                             let symblTopicResponse = try SymblTopicResponse(text)
@@ -157,12 +171,8 @@ public protocol SymblRealtimeDelegate: AnyObject {
     func symblRealtimeDisonnected()
     func symblReceivedMessage(message: SymblMessage)
     func symblReceivedMessageResponse(messageResponse: SymblMessageResponse)
-    func symblReceivedInsightResponse(insightResponse: SymblInsightResponse)
     func symblReceivedToipcResponse(topicResponse: SymblTopicResponse)
-    
-    // func symblReceivedTopicResponse()
-    // func symblReceivedInsightResponse()
-    // func symblReceivedActionItems()
-    // func symblReceivedQuestions()
-    // func symblReceivedFollowUps()
+    func symblReceivedActionItems(actionItems: [SymblInsight])
+    func symblReceivedQuestions(questions: [SymblInsight])
+    func symblReceivedFollowUps(followUps: [SymblInsight])
 }
