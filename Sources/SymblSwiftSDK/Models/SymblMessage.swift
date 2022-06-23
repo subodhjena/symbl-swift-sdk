@@ -5,6 +5,9 @@
 //  Created by Subodh Jena on 23/06/22.
 //
 
+
+// message.type - started_listening, recognition_result, conversation_created, recognition_started, recognition_result
+
 import Foundation
 
 // MARK: - SymblMessage

@@ -130,10 +130,12 @@ public class SymblRealtimeApi: NSObject, URLSessionWebSocketDelegate {
                             self.delegate!.symblReceivedMessageResponse(messageResponse: symblMessageResponse)
                         }
                         else if(symblData.type == "insight_response") {
-//                            print("Received insight_response: \(text)")
+                            let symblInsightResponse = try SymblInsightResponse(text)
+                            self.delegate!.symblReceivedInsightResponse(insightResponse: symblInsightResponse)
                         }
                         else if(symblData.type == "topic_response") {
-//                            print("Received topic_response: \(text)")
+                            let symblTopicResponse = try SymblTopicResponse(text)
+                            self.delegate!.symblReceivedToipcResponse(topicResponse: symblTopicResponse)
                         }
                     } catch {
                         print("Failed while decoding data: \(error)")
@@ -155,6 +157,8 @@ public protocol SymblRealtimeDelegate: AnyObject {
     func symblRealtimeDisonnected()
     func symblReceivedMessage(message: SymblMessage)
     func symblReceivedMessageResponse(messageResponse: SymblMessageResponse)
+    func symblReceivedInsightResponse(insightResponse: SymblInsightResponse)
+    func symblReceivedToipcResponse(topicResponse: SymblTopicResponse)
     
     // func symblReceivedTopicResponse()
     // func symblReceivedInsightResponse()
