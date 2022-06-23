@@ -7,7 +7,7 @@
 
 import Foundation
 
-class JSONNull: Codable, Hashable {
+public class JSONNull: Codable, Hashable {
 
     public static func == (lhs: JSONNull, rhs: JSONNull) -> Bool {
         return true
@@ -52,7 +52,7 @@ class JSONCodingKey: CodingKey {
     }
 }
 
-class JSONAny: Codable {
+public class JSONAny: Codable {
 
     let value: Any
 

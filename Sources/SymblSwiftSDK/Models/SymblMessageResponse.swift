@@ -7,28 +7,24 @@
 
 import Foundation
 
-// MARK: - SymblStartRequest
-public struct SymblStartRequest: Codable {
-    public var insightTypes: [String]
-    public var meetingTitle: String
-    public var config: SymblConfig
-    public var speaker: SymblSpeaker
+// MARK: - SymblMessageResponse
+public struct SymblMessageResponse: Codable {
     public var type: String
+    public var messages: [SymblMessage]
+    public var sequenceNumber: Int
 
-    public init(insightTypes: [String], meetingTitle: String, config: SymblConfig, speaker: SymblSpeaker, type: String) {
-        self.insightTypes = insightTypes
-        self.meetingTitle = meetingTitle
-        self.config = config
-        self.speaker = speaker
+    public init(type: String, messages: [SymblMessage], sequenceNumber: Int) {
         self.type = type
+        self.messages = messages
+        self.sequenceNumber = sequenceNumber
     }
 }
 
-// MARK: SymblStartRequest convenience initializers and mutators
+// MARK: SymblMessageResponse convenience initializers and mutators
 
-public extension SymblStartRequest {
+public extension SymblMessageResponse {
     init(data: Data) throws {
-        self = try newJSONDecoder().decode(SymblStartRequest.self, from: data)
+        self = try newJSONDecoder().decode(SymblMessageResponse.self, from: data)
     }
 
     init(_ json: String, using encoding: String.Encoding = .utf8) throws {
@@ -43,18 +39,14 @@ public extension SymblStartRequest {
     }
 
     func with(
-        insightTypes: [String]? = nil,
-        meetingTitle: String? = nil,
-        config: SymblConfig? = nil,
-        speaker: SymblSpeaker? = nil,
-        type: String? = nil
-    ) -> SymblStartRequest {
-        return SymblStartRequest(
-            insightTypes: insightTypes ?? self.insightTypes,
-            meetingTitle: meetingTitle ?? self.meetingTitle,
-            config: config ?? self.config,
-            speaker: speaker ?? self.speaker,
-            type: type ?? self.type
+        type: String? = nil,
+        messages: [SymblMessage]? = nil,
+        sequenceNumber: Int? = nil
+    ) -> SymblMessageResponse {
+        return SymblMessageResponse(
+            type: type ?? self.type,
+            messages: messages ?? self.messages,
+            sequenceNumber: sequenceNumber ?? self.sequenceNumber
         )
     }
 
@@ -67,24 +59,20 @@ public extension SymblStartRequest {
     }
 }
 
-// MARK: - SymblConfig
-public struct SymblConfig: Codable {
-    public var speechRecognition: SymblSpeechRecognition
-    public var confidenceThreshold: Double
-    public var languageCode: String
+// MARK: - SymblChannel
+public struct SymblChannel: Codable {
+    public var id: String
 
-    public init(speechRecognition: SymblSpeechRecognition, confidenceThreshold: Double, languageCode: String) {
-        self.speechRecognition = speechRecognition
-        self.confidenceThreshold = confidenceThreshold
-        self.languageCode = languageCode
+    public init(id: String) {
+        self.id = id
     }
 }
 
-// MARK: SymblConfig convenience initializers and mutators
+// MARK: SymblChannel convenience initializers and mutators
 
-public extension SymblConfig {
+public extension SymblChannel {
     init(data: Data) throws {
-        self = try newJSONDecoder().decode(SymblConfig.self, from: data)
+        self = try newJSONDecoder().decode(SymblChannel.self, from: data)
     }
 
     init(_ json: String, using encoding: String.Encoding = .utf8) throws {
@@ -99,14 +87,10 @@ public extension SymblConfig {
     }
 
     func with(
-        speechRecognition: SymblSpeechRecognition? = nil,
-        confidenceThreshold: Double? = nil,
-        languageCode: String? = nil
-    ) -> SymblConfig {
-        return SymblConfig(
-            speechRecognition: speechRecognition ?? self.speechRecognition,
-            confidenceThreshold: confidenceThreshold ?? self.confidenceThreshold,
-            languageCode: languageCode ?? self.languageCode
+        id: String? = nil
+    ) -> SymblChannel {
+        return SymblChannel(
+            id: id ?? self.id
         )
     }
 
@@ -119,22 +103,21 @@ public extension SymblConfig {
     }
 }
 
-// MARK: - SymblSpeechRecognition
-public struct SymblSpeechRecognition: Codable {
-    public var encoding: String
-    public var sampleRateHertz: Int
+// MARK: - SymblDuration
+public struct SymblDuration: Codable {
+    public var startTime, endTime: String
 
-    public init(encoding: String, sampleRateHertz: Int) {
-        self.encoding = encoding
-        self.sampleRateHertz = sampleRateHertz
+    public init(startTime: String, endTime: String) {
+        self.startTime = startTime
+        self.endTime = endTime
     }
 }
 
-// MARK: SymblSpeechRecognition convenience initializers and mutators
+// MARK: SymblDuration convenience initializers and mutators
 
-public extension SymblSpeechRecognition {
+public extension SymblDuration {
     init(data: Data) throws {
-        self = try newJSONDecoder().decode(SymblSpeechRecognition.self, from: data)
+        self = try newJSONDecoder().decode(SymblDuration.self, from: data)
     }
 
     init(_ json: String, using encoding: String.Encoding = .utf8) throws {
@@ -149,12 +132,12 @@ public extension SymblSpeechRecognition {
     }
 
     func with(
-        encoding: String? = nil,
-        sampleRateHertz: Int? = nil
-    ) -> SymblSpeechRecognition {
-        return SymblSpeechRecognition(
-            encoding: encoding ?? self.encoding,
-            sampleRateHertz: sampleRateHertz ?? self.sampleRateHertz
+        startTime: String? = nil,
+        endTime: String? = nil
+    ) -> SymblDuration {
+        return SymblDuration(
+            startTime: startTime ?? self.startTime,
+            endTime: endTime ?? self.endTime
         )
     }
 
@@ -167,26 +150,27 @@ public extension SymblSpeechRecognition {
     }
 }
 
-// MARK: - SymblSpeaker
-public struct SymblSpeaker: Codable {
-    public var name, userID: String
+// MARK: - SymblFrom
+public struct SymblFrom: Codable {
+    public var id, name, userID: String
 
     enum CodingKeys: String, CodingKey {
-        case name
+        case id, name
         case userID
     }
 
-    public init(name: String, userID: String) {
+    public init(id: String, name: String, userID: String) {
+        self.id = id
         self.name = name
         self.userID = userID
     }
 }
 
-// MARK: SymblSpeaker convenience initializers and mutators
+// MARK: SymblFrom convenience initializers and mutators
 
-public extension SymblSpeaker {
+public extension SymblFrom {
     init(data: Data) throws {
-        self = try newJSONDecoder().decode(SymblSpeaker.self, from: data)
+        self = try newJSONDecoder().decode(SymblFrom.self, from: data)
     }
 
     init(_ json: String, using encoding: String.Encoding = .utf8) throws {
@@ -201,10 +185,12 @@ public extension SymblSpeaker {
     }
 
     func with(
+        id: String? = nil,
         name: String? = nil,
         userID: String? = nil
-    ) -> SymblSpeaker {
-        return SymblSpeaker(
+    ) -> SymblFrom {
+        return SymblFrom(
+            id: id ?? self.id,
             name: name ?? self.name,
             userID: userID ?? self.userID
         )
@@ -219,20 +205,32 @@ public extension SymblSpeaker {
     }
 }
 
-// MARK: - SymblStopRequest
-public struct SymblStopRequest: Codable {
-    public var type: String
+// MARK: - SymblMetadata
+public struct SymblMetadata: Codable {
+    public var disablePunctuation: Bool
+    public var originalContent, words, originalMessageID: String
+    public var timezoneOffset: Int?
 
-    public init(type: String) {
-        self.type = type
+    enum CodingKeys: String, CodingKey {
+        case disablePunctuation, originalContent, words
+        case originalMessageID
+        case timezoneOffset
+    }
+
+    public init(disablePunctuation: Bool, originalContent: String, words: String, originalMessageID: String, timezoneOffset: Int?) {
+        self.disablePunctuation = disablePunctuation
+        self.originalContent = originalContent
+        self.words = words
+        self.originalMessageID = originalMessageID
+        self.timezoneOffset = timezoneOffset
     }
 }
 
-// MARK: SymblStopRequest convenience initializers and mutators
+// MARK: SymblMetadata convenience initializers and mutators
 
-public extension SymblStopRequest {
+public extension SymblMetadata {
     init(data: Data) throws {
-        self = try newJSONDecoder().decode(SymblStopRequest.self, from: data)
+        self = try newJSONDecoder().decode(SymblMetadata.self, from: data)
     }
 
     init(_ json: String, using encoding: String.Encoding = .utf8) throws {
@@ -247,10 +245,18 @@ public extension SymblStopRequest {
     }
 
     func with(
-        type: String? = nil
-    ) -> SymblStopRequest {
-        return SymblStopRequest(
-            type: type ?? self.type
+        disablePunctuation: Bool? = nil,
+        originalContent: String? = nil,
+        words: String? = nil,
+        originalMessageID: String? = nil,
+        timezoneOffset: Int?? = nil
+    ) -> SymblMetadata {
+        return SymblMetadata(
+            disablePunctuation: disablePunctuation ?? self.disablePunctuation,
+            originalContent: originalContent ?? self.originalContent,
+            words: words ?? self.words,
+            originalMessageID: originalMessageID ?? self.originalMessageID,
+            timezoneOffset: timezoneOffset ?? self.timezoneOffset
         )
     }
 
@@ -262,3 +268,4 @@ public extension SymblStopRequest {
         return String(data: try self.jsonData(), encoding: encoding)
     }
 }
+

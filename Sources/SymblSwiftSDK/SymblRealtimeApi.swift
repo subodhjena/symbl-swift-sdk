@@ -119,7 +119,25 @@ public class SymblRealtimeApi: NSObject, URLSessionWebSocketDelegate {
             case .success(let message):
                 switch message {
                 case .string(let text):
-                    print("Received text message: \(text)")
+                    do {
+                        let symblData = try SymblData(text)
+                        if(symblData.type == "message") {
+                            let symblMessageData = try SymblMessageData(text)
+                            self.delegate!.symblReceivedMessage(message: symblMessageData.message)
+                        }
+                        else if(symblData.type == "message_response") {
+                            let symblMessageResponse = try SymblMessageResponse(text)
+                            self.delegate!.symblReceivedMessageResponse(messageResponse: symblMessageResponse)
+                        }
+                        else if(symblData.type == "insight_response") {
+//                            print("Received insight_response: \(text)")
+                        }
+                        else if(symblData.type == "topic_response") {
+//                            print("Received topic_response: \(text)")
+                        }
+                    } catch {
+                        print("Failed while decoding data: \(error)")
+                    }
                 case .data(let data):
                     print("Received binary message: \(data)")
                 @unknown default:
@@ -135,4 +153,12 @@ public class SymblRealtimeApi: NSObject, URLSessionWebSocketDelegate {
 public protocol SymblRealtimeDelegate: AnyObject {
     func symblRealtimeConnected()
     func symblRealtimeDisonnected()
+    func symblReceivedMessage(message: SymblMessage)
+    func symblReceivedMessageResponse(messageResponse: SymblMessageResponse)
+    
+    // func symblReceivedTopicResponse()
+    // func symblReceivedInsightResponse()
+    // func symblReceivedActionItems()
+    // func symblReceivedQuestions()
+    // func symblReceivedFollowUps()
 }
