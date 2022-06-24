@@ -60,7 +60,8 @@ Start request
 // Sample iOS request
 // Pass in an instance of start request
 
-symbl.realtimeSession.startRequest(startRequest: SymblStartRequest)
+let startRequest = SymblStartRequest (...)
+symbl.realtimeSession.startRequest(startRequest)
 ```
 
 You can pass the audio chunks to streamAudio() function and start getting the analytics
