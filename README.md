@@ -10,6 +10,10 @@ Swift SDK to add symbl's api cababilities to your iOS, iPad and Mac apps
 
 - [Streaming](https://docs.symbl.ai/docs/streamingapi/introduction)
 
+## Demo app
+
+A sample iOS built using this SDK could be found here - https://github.com/subodhjena/symbl-demo-ios
+
 ## Installation
 
 Please use Swift Package Manager
