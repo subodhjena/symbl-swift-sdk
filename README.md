@@ -1,6 +1,6 @@
 ![Symbl](https://avatars.githubusercontent.com/u/61848556)
 
-# Symbl Swift SDK
+# Symbl Swift SDK (Note: WIP)
 
 [![Build and Test](https://github.com/subodhjena/symbl-swift-sdk/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/subodhjena/symbl-swift-sdk/actions/workflows/build-and-test.yml)
 
